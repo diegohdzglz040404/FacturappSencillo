@@ -19,6 +19,8 @@
             --card-secondary-bg: #1D1F22;          /* rgb(29,31,34)     - tarjeta secundaria */
             --btn-bg: #FFFFFF;                     /* rgb(255,255,255)  - botones sólidos */
             --btn-text-dark: #000000;              /* rgb(0,0,0)        - texto sobre botones claros */
+            --error-color: #ff6b6b;                /* Color para errores */
+            --success-color: #51cf66;              /* Color para éxito */
 
             --text: var(--body-color);
             --muted: #9fbfe6;
@@ -130,6 +132,7 @@
             outline:none;
             transition: box-shadow 160ms ease, transform 120ms ease, border-color 160ms;
             -webkit-appearance:none;
+            -moz-appearance: none;
         }
 
         input::placeholder{ color: rgba(226,230,233,0.38); }
@@ -138,6 +141,23 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.07);
             border-color: rgba(255,255,255,0.14);
             transform: translateY(-2px);
+        }
+
+        /* Mejoras de accesibilidad para foco */
+        input:focus-visible,
+        button:focus-visible,
+        .toggle-password:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* Estados de validación */
+        input:invalid:not(:focus):not(:placeholder-shown) {
+            border-color: var(--error-color);
+        }
+
+        input:valid:not(:focus):not(:placeholder-shown) {
+            border-color: var(--success-color);
         }
 
         .toggle-password{
@@ -152,8 +172,12 @@
             cursor:pointer;
             padding:6px;
             border-radius:8px;
+            transition: background-color 160ms ease;
         }
-        .toggle-password:focus{ outline:2px solid rgba(0,0,0,0.18) }
+        
+        .toggle-password:hover {
+            background-color: rgba(255,255,255,0.08);
+        }
 
         .help-row{
             display:flex;
@@ -166,7 +190,20 @@
         .help-row a{ color:var(--accent-color-light); text-decoration:none; }
         .help-row a:hover{ text-decoration:underline; color:var(--accent-color) }
 
-        .remember{ display:flex; align-items:center; gap:8px; color:var(--accent-color-light); font-size:0.9rem; }
+        .remember{ 
+            display:flex; 
+            align-items:center; 
+            gap:8px; 
+            color:var(--accent-color-light); 
+            font-size:0.9rem; 
+            cursor: pointer;
+        }
+
+        .remember input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-color);
+        }
 
         button[type="submit"]{
             display:inline-block;
@@ -187,6 +224,22 @@
             box-shadow: 0 18px 40px rgba(0,0,0,0.6);
         }
 
+        button[type="submit"]:active{
+            transform: translateY(-1px);
+        }
+
+        /* Mensajes de error */
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.8rem;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
         hr{ border:none; height:1px; background: rgba(255,255,255,0.03); margin:18px 0; }
 
         .secondary-links{ font-size:0.92rem; color:var(--accent-color-light); }
@@ -195,18 +248,57 @@
 
         footer small{ display:block; margin-top:12px; color:var(--accent-color-light); font-size:0.78rem; text-align:left; }
 
+        /* Clase para elementos ocultos visualmente pero accesibles para lectores de pantalla */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Mejoras responsive */
         @media (max-width:480px){
-            main#login-form-container{ padding:20px; border-radius:10px; }
+            main#login-form-container{ 
+                padding:20px; 
+                border-radius:10px; 
+            }
             h1{ font-size:1rem }
             .logo{ width:40px; height:40px }
+            
+            .help-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            input[type="email"], 
+            input[type="password"] {
+                padding: 14px 12px;
+                font-size: 16px; /* Previene zoom en iOS */
+            }
+        }
+
+        @media (max-width: 350px) {
+            body {
+                padding: 16px;
+            }
+            
+            main#login-form-container {
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <main id="login-form-container" role="main" aria-labelledby="title">
-        <header class="brand" aria-hidden="false">
+    <main id="login-form-container" role="main" aria-labelledby="title" aria-describedby="description">
+        <header class="brand">
             <div class="logo" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="3" y="3" width="18" height="18" rx="4" fill="#FFFFFF" fill-opacity="0.08"/>
                     <path d="M7 12h10M7 8h10M7 16h6" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -216,29 +308,44 @@
         <h1 id="title">Genera tus facturas de forma fácil y segura</h1>
         <h2>Accede a tu cuenta de facturación</h2>
 
-        <p class="lead">
+        <p id="description" class="lead">
             Gestiona todas tus facturas, recibos de nómina y clientes desde un único panel.
             Rápido, seguro y compatible con CFDI 4.0.
         </p>
 
-        <form id="login-form" action="/iniciar-sesion" method="POST" novalidate>
+        <form id="login-form" novalidate>
             <div class="form-group">
                 <label for="email">Correo Electrónico</label>
                 <div class="input-wrap">
-                    <input type="email" id="email" name="email" required placeholder="nombre@dominio.com" aria-required="true" aria-label="Correo electrónico" autocomplete="username">
+                    <input type="email" id="email" name="email" required 
+                           placeholder="nombre@dominio.com" 
+                           aria-required="true" 
+                           aria-describedby="email-error"
+                           autocomplete="username">
                 </div>
+                <div id="email-error" class="error-message" aria-live="polite"></div>
             </div>
 
             <div class="form-group">
                 <label for="password">Contraseña</label>
                 <div class="input-wrap">
-                    <input type="password" id="password" name="password" required placeholder="Introduce tu contraseña" aria-required="true" aria-label="Contraseña" autocomplete="current-password">
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Introduce tu contraseña" 
+                           aria-required="true" 
+                           aria-describedby="password-error password-requirements"
+                           autocomplete="current-password"
+                           minlength="8">
                     <button type="button" class="toggle-password" aria-pressed="false" aria-label="Mostrar contraseña">Mostrar</button>
                 </div>
+                <div id="password-error" class="error-message" aria-live="polite"></div>
+                <span id="password-requirements" class="sr-only">La contraseña debe tener al menos 8 caracteres</span>
             </div>
 
-            <div class="help-row" aria-hidden="false">
-                <label class="remember"><input type="checkbox" name="remember" style="accent-color: var(--accent-color-background-muted);"> Recuérdame</label>
+            <div class="help-row">
+                <label for="remember" class="remember">
+                    <input type="checkbox" id="remember" name="remember">
+                    <span>Recuérdame</span>
+                </label>
                 <a href="/recuperar">¿Olvidaste tu contraseña?</a>
             </div>
 
@@ -252,45 +359,163 @@
             <p>O <a href="/empezar-gratis">Prueba el modelo gratis ahora</a> sin compromiso.</p>
         </div>
 
-        <footer aria-hidden="false">
+        <footer>
             <small>Nuestra plataforma garantiza cumplimiento con los requisitos del SAT para emitir CFDI 4.0.</small>
         </footer>
     </main>
 
     <script>
         (function(){
-            // Toggle contraseña accesible (sin azul)
-            const btn = document.querySelector('.toggle-password');
-            const pwd = document.getElementById('password');
-            if (btn && pwd) {
-                btn.addEventListener('click', () => {
-                    const showing = pwd.type === 'text';
-                    pwd.type = showing ? 'password' : 'text';
-                    btn.textContent = showing ? 'Mostrar' : 'Ocultar';
-                    btn.setAttribute('aria-pressed', String(!showing));
-                });
-                btn.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        btn.click();
+            'use strict';
+            
+            // Elementos del DOM
+            const form = document.getElementById('login-form');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.querySelector('.toggle-password');
+            const emailError = document.getElementById('email-error');
+            const passwordError = document.getElementById('password-error');
+            
+            // Verificar que los elementos existen
+            if (!form || !emailInput || !passwordInput || !togglePasswordBtn) {
+                console.error('No se encontraron todos los elementos necesarios');
+                return;
+            }
+            
+            // Toggle contraseña accesible
+            togglePasswordBtn.addEventListener('click', () => {
+                const showing = passwordInput.type === 'text';
+                passwordInput.type = showing ? 'password' : 'text';
+                togglePasswordBtn.textContent = showing ? 'Mostrar' : 'Ocultar';
+                togglePasswordBtn.setAttribute('aria-pressed', String(!showing));
+            });
+            
+            togglePasswordBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    togglePasswordBtn.click();
+                }
+            });
+            
+            // Validación en tiempo real
+            emailInput.addEventListener('blur', validateEmail);
+            passwordInput.addEventListener('blur', validatePassword);
+            
+            function validateEmail() {
+                const email = emailInput.value.trim();
+                emailError.textContent = '';
+                emailError.classList.remove('show');
+                
+                if (!email) {
+                    showError(emailError, 'El correo electrónico es obligatorio');
+                    return false;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showError(emailError, 'Por favor, introduce un correo electrónico válido');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validatePassword() {
+                const password = passwordInput.value;
+                passwordError.textContent = '';
+                passwordError.classList.remove('show');
+                
+                if (!password) {
+                    showError(passwordError, 'La contraseña es obligatoria');
+                    return false;
+                }
+                
+                if (password.length < 8) {
+                    showError(passwordError, 'La contraseña debe tener al menos 8 caracteres');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+            
+            function showError(errorElement, message) {
+                errorElement.textContent = message;
+                errorElement.classList.add('show');
+            }
+            
+            // Manejo del envío del formulario
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Validar campos
+                const isEmailValid = validateEmail();
+                const isPasswordValid = validatePassword();
+                
+                if (!isEmailValid || !isPasswordValid) {
+                    // Enfocar el primer campo con error
+                    if (!isEmailValid) {
+                        emailInput.focus();
+                    } else if (!isPasswordValid) {
+                        passwordInput.focus();
                     }
+                    return;
+                }
+                
+                // Mostrar estado de carga
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Iniciando sesión...';
+                submitBtn.disabled = true;
+                
+                try {
+                    // Simular autenticación (en un caso real, aquí iría una petición fetch)
+                    await simulateAuthentication();
+                    
+                    // Redirigir después de login exitoso
+                    window.location.href = 'https://diegohdzglz040404.github.io/FACTURAPP123/';
+                    
+                } catch (error) {
+                    // Mostrar error de autenticación
+                    showError(passwordError, 'Credenciales incorrectas. Por favor, verifica tu email y contraseña.');
+                    passwordInput.focus();
+                    
+                    // Restaurar botón
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+            
+            // Función simulada de autenticación
+            function simulateAuthentication() {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        // Simular fallo aleatorio para demostración (en producción esto se conectaría a un backend real)
+                        const shouldFail = Math.random() < 0.3; // 30% de probabilidad de fallo para demo
+                        
+                        if (shouldFail) {
+                            reject(new Error('Credenciales incorrectas'));
+                        } else {
+                            resolve();
+                        }
+                    }, 1500);
                 });
             }
-
-            // Redirección cliente-side al "Iniciar Sesión" para evitar POST en GitHub Pages
-            const form = document.getElementById('login-form');
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    // si hay campos inválidos, permitir que el navegador muestre el aviso
-                    if (!form.checkValidity()) return;
-                    e.preventDefault(); // evitar POST que genera 405 en GitHub Pages
-
-                    // aquí podrías validar con fetch; por ahora redirigir directamente
-                    window.location.href = 'https://diegohdzglz040404.github.io/FACTURAPP123/';
+            
+            // Mejorar accesibilidad del checkbox
+            const rememberCheckbox = document.getElementById('remember');
+            if (rememberCheckbox) {
+                rememberCheckbox.addEventListener('keydown', (e) => {
+                    if (e.key === ' ') {
+                        e.preventDefault();
+                        rememberCheckbox.checked = !rememberCheckbox.checked;
+                    }
                 });
             }
         })();
     </script>
 </body>
 </html>
-
